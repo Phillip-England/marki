@@ -96,6 +96,8 @@ type MarkdownFile struct {
 	Theme string
 	Html string
 	Meta map[string]any
+    MetaHtml string
+    FileName string
 }
 
 func NewMarkdownFile(path string, theme string) (MarkdownFile, error) {
@@ -136,5 +138,18 @@ func NewMarkdownFile(path string, theme string) (MarkdownFile, error) {
 	}
 	mdFile.Html = buf.String()
 	mdFile.Meta = meta.Get(context)
+    mdFile.MetaHtml = ""
+    for key, value := range mdFile.Meta {
+        mdFile.MetaHtml = mdFile.MetaHtml + fmt.Sprintf("<meta class='md-meta' name='%s' content='%s'>\n", key, value)
+    }
+    mdFile.Html = mdFile.MetaHtml+mdFile.Html
+    mdFile.FileName = filepath.Base(mdFile.Path)
+
     return mdFile, nil
+}
+
+
+func SaveMarkdownHtmlToDisk(mdFile MarkdownFile, outDir string) error {
+    
+    return nil
 }
