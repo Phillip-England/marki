@@ -21,65 +21,92 @@ import (
 
 func main() {
 
-	args := os.Args
-	if len(args) == 1 {
-		printHelpScreen()
-		return
-	}
-
-	indicatingArg := getArg(1)
-	if indicatingArg != "-g" {
-		printHelpScreen()
-		return
-	}
-
-	inDir := getArg(2)
-	if inDir == "" {
-		printHelpScreen()
-		return
-	}
-
-	outDir := getArg(3)
-	if outDir == "" {
-		printHelpScreen()
-		return
-	}
-
-	theme := getArg(4)
-	if outDir == "" {
-		printHelpScreen()
-		return
-	}
-
-	watchFlag := getArg(5)
-
-	err := validateInDir(inDir)
+	args, err := ArgsGenerateNew()
 	if err != nil {
-		perr(err)
+		printHelpScreen()
+		printError(err)
+		return
 	}
 
-	err = validateTheme(theme)
-	if err != nil {
-		perr(err)
-	}
-
-	mkdirIfNotExists(outDir)
-
+	mkdirIfNotExists(args.OutDir)
 	fmt.Println("🤘: marki launch!")
 
-	if watchFlag == "" {
-		onChange(inDir, outDir, theme, fsnotify.Event{
-			Op: fsnotify.Write,
-		})
+	// handling normal generation
+	err = onChange(args.InDir, args.OutDir, args.Theme, fsnotify.Event{
+		Op: fsnotify.Write,
+	})
+	if err != nil {
+		printError(err)
+	}
+
+	// exit if we are not watching
+	if args.FlagWatch == "" {
 		return
 	}
 
-	fmt.Printf("👁️: watching %s\n", inDir)
-	err = startRuntime(inDir, outDir, theme)
+	// handling runtime generation with --watch
+	fmt.Printf("👁️: watching %s\n", args.InDir)
+	err = startRuntime(args.InDir, args.OutDir, args.Theme)
 	if err != nil {
-		perr(err)
-		startRuntime(inDir, outDir, theme)
+		printError(err)
+		startRuntime(args.InDir, args.OutDir, args.Theme)
 	}
+
+}
+
+type ArgsGenerate struct {
+	InDir     string
+	OutDir    string
+	Theme     string
+	FlagWatch string
+}
+
+func ArgsGenerateNew() (ArgsGenerate, error) {
+	args := &ArgsGenerate{}
+	args.InDir = getArg(1)
+	args.OutDir = getArg(2)
+	args.Theme = getArg(3)
+	args.FlagWatch = getArg(4)
+	err := args.validateTheme()
+	if err != nil {
+		return *args, err
+	}
+	err = args.validateInDir()
+	if err != nil {
+		return *args, err
+	}
+	return *args, nil
+}
+
+func (args *ArgsGenerate) validateTheme() error {
+	validThemes := []string{
+		"abap", "algol", "algol_nu", "arduino", "autumn", "average", "base16-snazzy",
+		"borland", "bw", "catppuccin-frappe", "catppuccin-latte", "catppuccin-macchiato",
+		"catppuccin-mocha", "colorful", "doom-one", "doom-one2", "dracula", "emacs",
+		"evergarden", "friendly", "fruity", "github-dark", "github", "gruvbox-light",
+		"gruvbox", "hr_high_contrast", "hrdark", "igor", "lovelace", "manni", "modus-operandi",
+		"modus-vivendi", "monokai", "monokailight", "murphy", "native", "nord", "nordic",
+		"onedark", "onesenterprise", "paraiso-dark", "paraiso-light", "pastie", "perldoc",
+		"pygments", "rainbow_dash", "rose-pine-dawn", "rose-pine-moon", "rose-pine", "rpgle",
+		"rrt", "solarized-dark", "solarized-dark256", "solarized-light", "swapoff", "tango",
+		"tokyonight-day", "tokyonight-moon", "tokyonight-night", "tokyonight-storm", "trac",
+		"vim", "vs", "vulcan", "witchhazel", "xcode-dark", "xcode",
+	}
+	themeList := ""
+	for _, vTheme := range validThemes {
+		themeList = themeList + vTheme + "\n"
+		if args.Theme == vTheme {
+			return nil
+		}
+	}
+	return fmt.Errorf("theme [%s] is not a valid theme\nhere is a list of valid themes:\n%s", args.Theme, themeList)
+}
+
+func (args *ArgsGenerate) validateInDir() error {
+	if !dirExists(args.InDir) {
+		return fmt.Errorf("input directory [%s] does not exist", args.InDir)
+	}
+	return nil
 }
 
 func getArg(number int) string {
@@ -95,7 +122,7 @@ func getArg(number int) string {
 func printHelpScreen() {
 	fmt.Println("👋 welcome to marki")
 	fmt.Println("")
-	fmt.Println("[-g] GENERATE: marki -g <INDIR> <OUTDIR> <THEME>")
+	fmt.Println("USAGE: marki <INDIR> <OUTDIR> <THEME>")
 	fmt.Println("   iterate through <INDIR>")
 	fmt.Println("   convert .md to .html with code <THEME>")
 	fmt.Println("   place the .html files in <OUTDIR>")
@@ -104,25 +131,8 @@ func printHelpScreen() {
 	fmt.Println("       [--watch]: watch <INDIR> and re-run on file change")
 	fmt.Println("")
 	fmt.Println("   EXAMPLES:")
-	fmt.Println("        marki -g ./markdown ./html dracula")
-	fmt.Println("        marki -g ./markdown ./html dracula --watch")
-}
-
-func validateTheme(theme string) error {
-	validThemes := []string{"dracula"}
-	for _, vTheme := range validThemes {
-		if theme == vTheme {
-			return nil
-		}
-	}
-	return fmt.Errorf("theme [%s] is not a valid theme", theme)
-}
-
-func validateInDir(inDir string) error {
-	if !dirExists(inDir) {
-		return fmt.Errorf("input directory [%s] does not exist", inDir)
-	}
-	return nil
+	fmt.Println("        marki ./markdown ./html dracula")
+	fmt.Println("        marki ./markdown ./html dracula --watch")
 }
 
 func dirExists(path string) bool {
@@ -132,7 +142,7 @@ func dirExists(path string) bool {
 	return true
 }
 
-func perr(err error) {
+func printError(err error) {
 	fmt.Printf("🚨: %s\n", err.Error())
 }
 
