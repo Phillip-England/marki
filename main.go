@@ -6,6 +6,7 @@ import (
     "io/fs"
 	"os"
 	"bytes"
+    "strings"
 	"github.com/fsnotify/fsnotify"
 	"github.com/yuin/goldmark"
     "github.com/yuin/goldmark/parser"
@@ -76,11 +77,11 @@ func onChange(inDir string, outDir string, theme string, event fsnotify.Event) e
         if ext != ".md" {
             return nil
         }
-		mdFile, err := NewMarkdownFile(path, theme)
+		mdFile, err = NewMarkdownFile(path, outDir, theme)
         if err != nil {
             return err
         }
-		fmt.Println(mdFile.Path)
+        err := SaveMarkdownHtmlToDisk(mdFile)
         return nil
     })
     if err != nil {
@@ -98,9 +99,12 @@ type MarkdownFile struct {
 	Meta map[string]any
     MetaHtml string
     FileName string
+    PathWithoutBase string
+    SaveToPath string
+    SaveToDir string
 }
 
-func NewMarkdownFile(path string, theme string) (MarkdownFile, error) {
+func NewMarkdownFile(path string, outDir string, theme string) (MarkdownFile, error) {
 	var mdFile MarkdownFile
 	mdBytes, err := os.ReadFile(path)
 	if err != nil {
@@ -144,12 +148,26 @@ func NewMarkdownFile(path string, theme string) (MarkdownFile, error) {
     }
     mdFile.Html = mdFile.MetaHtml+mdFile.Html
     mdFile.FileName = filepath.Base(mdFile.Path)
-
+    mdFile.PathWithoutBase = strings.ReplaceAll(mdFile.Path, mdFile.FileName, "")
+    mdFile.SaveToPath = strings.ReplaceAll(strings.ReplaceAll(mdFile.Path, mdFile.PathWithoutBase, outDir+"/"), ".md", ".html") 
+    mdFile.SaveToDir = filepath.Dir(mdFile.SaveToPath)
     return mdFile, nil
 }
 
 
-func SaveMarkdownHtmlToDisk(mdFile MarkdownFile, outDir string) error {
-    
+func SaveMarkdownHtmlToDisk(mdFile MarkdownFile) error {
+    err := os.MkdirAll(mdFile.SaveToDir, 0755)
+    if err != nil {
+        return err
+    }
+    htmlFile, err := os.Create(mdFile.SaveToPath)
+    if err != nil {
+        return err
+    }
+    defer htmlFile.Close()
+    _, err = htmlFile.Write([]byte(mdFile.Html))
+    if err != nil {
+        return err
+    }
     return nil
 }

@@ -1,23 +1,13 @@
 package main
 
 import (
-    "fmt"
     "testing"
-    "strings"
 )
 
 func TestNewMarkdownFile(t *testing.T) {
-
-    path := "./tmp/index.md"
-    theme := "dracula"
-
-    mdFile, err := NewMarkdownFile(path, theme)
+    mdFile, err := NewMarkdownFile("./tmp/index.md", "./tmp-out", "dracula")
     if err != nil {
         panic(err)
     }
-
-    fmt.Println(mdFile.FileName)
-
-
-
+    err = SaveMarkdownHtmlToDisk(mdFile, outDir)
 }
