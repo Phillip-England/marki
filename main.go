@@ -17,12 +17,27 @@ import (
 )
 
 func main() {
+
+    // pre runtime validation 
+
 	err := startRuntime("./testmd", "./out", "dracula")
 	if err != nil {
         fmt.Printf("MARKI ERROR: %s\n", err.Error())
         main()
 	}
 }
+
+func DirExists(path string) bool {
+    if _, err := os.Stat(path); os.IsNotExist(err) {
+        return false
+    }
+    return true
+}
+
+func PrintMarkiErr(err error) {
+    fmt.Printf("MARKI ERROR: %s\n", err.Error())
+}
+
 
 func startRuntime(inDir string, outDir string, theme string) error {
 	watcher, err := fsnotify.NewWatcher()
@@ -66,7 +81,14 @@ func startRuntime(inDir string, outDir string, theme string) error {
 }
 
 func onChange(inDir string, outDir string, theme string, event fsnotify.Event) error {
-    err := filepath.WalkDir(inDir, func(path string, d fs.DirEntry, err error) error {
+    if event.Op == fsnotify.Chmod {
+        return nil
+    }
+    err := InitOutDir(outDir)
+    if err != nil {
+        return err
+    }
+    err = filepath.WalkDir(inDir, func(path string, d fs.DirEntry, err error) error {
         if err != nil {
             return err
         }
@@ -77,11 +99,14 @@ func onChange(inDir string, outDir string, theme string, event fsnotify.Event) e
         if ext != ".md" {
             return nil
         }
-		mdFile, err = NewMarkdownFile(path, outDir, theme)
+        mdFile, err := NewMarkdownFile(path, outDir, theme)
         if err != nil {
             return err
         }
-        err := SaveMarkdownHtmlToDisk(mdFile)
+        err = SaveMarkdownHtmlToDisk(mdFile)
+        if err != nil {
+            return err
+        }
         return nil
     })
     if err != nil {
@@ -166,6 +191,28 @@ func SaveMarkdownHtmlToDisk(mdFile MarkdownFile) error {
     }
     defer htmlFile.Close()
     _, err = htmlFile.Write([]byte(mdFile.Html))
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+
+func InitOutDir(outDir string) error {
+    err := os.MkdirAll(outDir, 0755)
+    if err != nil {
+        return err
+    }
+    err = filepath.WalkDir(outDir, func(path string, d fs.DirEntry, err error) error {
+        if d.IsDir() {
+            return nil
+        }
+        err = os.Remove(path)
+        if err != nil {
+            return err
+        }
+        return nil
+    })
     if err != nil {
         return err
     }
