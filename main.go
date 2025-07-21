@@ -24,6 +24,7 @@ func main() {
 	args, err := ArgsGenerateNew()
 	if err != nil {
 		printHelpScreen()
+		fmt.Println("") // newline
 		printError(err)
 		return
 	}
@@ -64,8 +65,17 @@ type ArgsGenerate struct {
 func ArgsGenerateNew() (ArgsGenerate, error) {
 	args := &ArgsGenerate{}
 	args.InDir = getArg(1)
+	if args.InDir == "" {
+		return *args, fmt.Errorf("missing <INDIR>")
+	}
 	args.OutDir = getArg(2)
+	if args.OutDir == "" {
+		return *args, fmt.Errorf("missing <OUTDIR>")
+	}
 	args.Theme = getArg(3)
+	if args.Theme == "" {
+		return *args, fmt.Errorf("missing <THEME>")
+	}
 	args.FlagWatch = getArg(4)
 	err := args.validateTheme()
 	if err != nil {
@@ -92,14 +102,12 @@ func (args *ArgsGenerate) validateTheme() error {
 		"tokyonight-day", "tokyonight-moon", "tokyonight-night", "tokyonight-storm", "trac",
 		"vim", "vs", "vulcan", "witchhazel", "xcode-dark", "xcode",
 	}
-	themeList := ""
 	for _, vTheme := range validThemes {
-		themeList = themeList + vTheme + "\n"
 		if args.Theme == vTheme {
 			return nil
 		}
 	}
-	return fmt.Errorf("theme [%s] is not a valid theme\nhere is a list of valid themes:\n%s", args.Theme, themeList)
+	return fmt.Errorf("<THEME> [%s] is not a valid theme\nfor a list of valid themes see https://github.com/phillip-england/marki", args.Theme)
 }
 
 func (args *ArgsGenerate) validateInDir() error {
@@ -120,19 +128,12 @@ func getArg(number int) string {
 }
 
 func printHelpScreen() {
-	fmt.Println("👋 welcome to marki")
-	fmt.Println("")
 	fmt.Println("USAGE: marki <INDIR> <OUTDIR> <THEME>")
-	fmt.Println("   iterate through <INDIR>")
-	fmt.Println("   convert .md to .html with code <THEME>")
-	fmt.Println("   place the .html files in <OUTDIR>")
-	fmt.Println("")
-	fmt.Println("   OPTIONAL FLAGS:")
-	fmt.Println("       [--watch]: watch <INDIR> and re-run on file change")
-	fmt.Println("")
-	fmt.Println("   EXAMPLES:")
-	fmt.Println("        marki ./markdown ./html dracula")
-	fmt.Println("        marki ./markdown ./html dracula --watch")
+	fmt.Println("	marki ./markdown ./html dracula")
+	fmt.Println("	marki ./markdown ./html dracula --watch")
+	fmt.Println("OPTIONAL FLAGS:")
+	fmt.Println("	[--watch]: watch <INDIR> and re-run on file change")
+
 }
 
 func dirExists(path string) bool {
