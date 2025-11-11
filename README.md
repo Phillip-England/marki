@@ -42,8 +42,7 @@ some markdown content
 will result in the following HTML:
 ```html
 <meta name='metaDescription' content='my description'>
-<!-- MARKI SPLIT -->
-<h1 id="content">Content</h1>
+<!-- MARKI SPLIT --><h1 id="content">Content</h1>
 <p>some markdown content</p>
 ```
 

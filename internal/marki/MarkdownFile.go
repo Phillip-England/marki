@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/phillip-england/wherr"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	meta "github.com/yuin/goldmark-meta"
@@ -78,18 +79,13 @@ func NewMarkdownFile(path string, theme string) (MarkdownFile, error) {
 }
 
 func SaveMarkdownHtmlToDisk(mdFile MarkdownFile, saveTo string) error {
-	err := os.MkdirAll(saveTo, 0755)
+	err := os.MkdirAll(filepath.Dir(saveTo), 0755)
 	if err != nil {
-		return err
+		return wherr.Consume(wherr.Here(), err, "")
 	}
-	htmlFile, err := os.Create(saveTo)
+	err = os.WriteFile(saveTo, []byte(mdFile.Html), 0644)
 	if err != nil {
-		return err
-	}
-	defer htmlFile.Close()
-	_, err = htmlFile.Write([]byte(mdFile.Html))
-	if err != nil {
-		return err
+		return wherr.Consume(wherr.Here(), err, "")
 	}
 	return nil
 }

@@ -9,14 +9,14 @@ import (
 
 func main() {
 
-	app, err := whip.New(marki.NewDefaultCmd)
+	cli, err := whip.New(marki.NewDefaultCmd)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	app.At("convert", marki.NewConvertCmd)
+	cli.At("convert", marki.NewConvertCmd)
 
-	err = app.Run()
+	err = cli.Run()
 	if err != nil {
 		fmt.Println(err.Error())
 	}

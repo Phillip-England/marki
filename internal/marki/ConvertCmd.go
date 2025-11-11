@@ -1,8 +1,6 @@
 package marki
 
 import (
-	"fmt"
-
 	"github.com/phillip-england/wherr"
 	"github.com/phillip-england/whip"
 )
@@ -82,7 +80,10 @@ func handleFile(cmd ConvertCmd, app *whip.Cli) error {
 	if err != nil {
 		return wherr.Consume(wherr.Here(), err, "")
 	}
-	fmt.Println(mdFile.Html)
+	err = SaveMarkdownHtmlToDisk(mdFile, cmd.Out)
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
 	return nil
 }
 

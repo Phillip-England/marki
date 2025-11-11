@@ -1,0 +1,26 @@
+<meta name='metaContent' content='a readme about marki'>
+<!-- MARKI SPLIT --><h1 id="marki">marki</h1>
+<p>A runtime for content-driven developers who just want to turn <code>.md</code> into <code>.html</code> with styled code blocks. Run marki in the background, write your content, and use the generate html. Dead simple.</p>
+<h2 id="installation">Installation</h2>
+<pre style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>go install github.com/Phillip-England/marki@v0.0.2
+</span></span></code></pre><h2 id="usage">Usage</h2>
+<pre style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>marki &lt;INDIR&gt; &lt;OUTDIR&gt; &lt;THEME&gt; &lt;FLAGS&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>marki ./in ./out dracula
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>marki ./in ./out dracula --watch
+</span></span></code></pre><h2 id="themes">Themes</h2>
+<p>Marki uses <a href="https://github.com/yuin/goldmark">Goldmark</a> for converting markdown into html.</p>
+<p>Goldmark uses <a href="https://github.com/alecthomas/chroma">Chroma</a> for syntax highlighting. All the available themes for chroma can be found in the <code>.xml</code> files listed <a href="https://github.com/alecthomas/chroma/tree/master/styles">here</a>.</p>
+<p>The first theme is <code>abap.xml</code>, so to use it with marki call:</p>
+<pre style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>marki &lt;INDIR&gt; &lt;OUTDIR&gt; abap --watch
+</span></span></code></pre><h2 id="metadata">Metadata</h2>
+<p>Use YAML-style frontmatter in your markdown to generate HTML <code>&lt;meta&gt;</code> tags for your content. For example, the following markdown:</p>
+<pre style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>---
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>metaDescription: &#34;my description&#34;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>---
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="font-weight:bold"># Content
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="font-weight:bold"></span>some markdown content
+</span></span></code></pre><p>will result in the following HTML:</p>
+<pre style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#ff79c6">meta</span> <span style="color:#50fa7b">name</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#39;metaDescription&#39;</span> <span style="color:#50fa7b">content</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#39;my description&#39;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#6272a4">&lt;!-- MARKI SPLIT --&gt;</span>&lt;<span style="color:#ff79c6">h1</span> <span style="color:#50fa7b">id</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;content&#34;</span>&gt;Content&lt;/<span style="color:#ff79c6">h1</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>&lt;<span style="color:#ff79c6">p</span>&gt;some markdown content&lt;/<span style="color:#ff79c6">p</span>&gt;
+</span></span></code></pre><p>You can then split off the HTML by splitting the string by <code>&lt;!-- MARKI SPLIT --&gt;</code>, making it easy to parse out meta content from UI content.</p>
