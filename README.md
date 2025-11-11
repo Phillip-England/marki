@@ -1,3 +1,7 @@
+---
+metaContent: "a readme about marki"
+---
+
 # marki
 A runtime for content-driven developers who just want to turn `.md` into `.html` with styled code blocks. Run marki in the background, write your content, and use the generate html. Dead simple.
 
@@ -23,3 +27,24 @@ The first theme is `abap.xml`, so to use it with marki call:
 ```bash
 marki <INDIR> <OUTDIR> abap --watch
 ```
+
+## Metadata
+Use YAML-style frontmatter in your markdown to generate HTML `<meta>` tags for your content. For example, the following markdown:
+
+```md
+---
+metaDescription: "my description"
+---
+# Content
+some markdown content
+```
+
+will result in the following HTML:
+```html
+<meta name='metaDescription' content='my description'>
+<!-- MARKI SPLIT -->
+<h1 id="content">Content</h1>
+<p>some markdown content</p>
+```
+
+You can then split off the HTML by splitting the string by `<!-- MARKI SPLIT -->`, making it easy to parse out meta content from UI content.
