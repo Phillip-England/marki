@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/phillip-england/marki/internal/marki"
+	"github.com/phillip-england/marki/marki"
 	"github.com/phillip-england/whip"
 )
 
