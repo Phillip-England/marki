@@ -7,7 +7,7 @@ A runtime for content-driven developers who just want to turn `.md` into `.html`
 
 ## Installation
 ```bash
-go install github.com/Phillip-England/marki@v0.0.3
+go install github.com/Phillip-England/marki@v0.0.4
 ```
 
 ## Usage
