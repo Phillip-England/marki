@@ -1,4 +1,4 @@
-package marki
+package main
 
 import (
 	"fmt"
