@@ -2,6 +2,9 @@ package marki
 
 import (
 	"fmt"
+	"io/fs"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -130,7 +133,7 @@ func handleFile(cmd ConvertCmd, app *whip.Cli) error {
 				fmt.Printf("🚨: watcher error: %s\n", err.Error())
 			case <-triggerCh:
 				fmt.Printf("📝: writing to %s\n", cmd.Out)
-				if err := convertAndSave(cmd, app); err != nil {
+				if err := convertAndSaveFile(cmd.Src, cmd.Theme, cmd.Out); err != nil {
 					errCh <- err
 					return
 				}
@@ -147,15 +150,117 @@ func handleFile(cmd ConvertCmd, app *whip.Cli) error {
 }
 
 func handleDir(cmd ConvertCmd, app *whip.Cli) error {
+	err := convertAndSaveDir(cmd.Src, cmd.Out, cmd.Theme)
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
+	if !cmd.HasWatchFlag {
+		return nil
+	}
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
+	defer watcher.Close()
+	err = watcher.Add(cmd.Src)
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
+
+	err = filepath.WalkDir(cmd.Src, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return wherr.Consume(wherr.Here(), err, "")
+		}
+		if filepath.Ext(path) != ".md" {
+			return nil
+		}
+		err = watcher.Add(path)
+		if err != nil {
+			return wherr.Consume(wherr.Here(), err, "")
+		}
+		return nil
+	})
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
+	errCh := make(chan error)
+	fmt.Printf("👁️: watching %s\n", cmd.Src)
+	triggerCh := make(chan bool)
+	go func() {
+		var timer *time.Timer
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					if timer != nil {
+						timer.Stop()
+					}
+					timer = time.AfterFunc(100*time.Millisecond, func() {
+						triggerCh <- true
+					})
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				fmt.Printf("🚨: watcher error: %s\n", err.Error())
+			case <-triggerCh:
+				fmt.Printf("📝: writing to %s\n", cmd.Out)
+				if err := convertAndSaveDir(cmd.Src, cmd.Out, cmd.Theme); err != nil {
+					errCh <- err
+					return
+				}
+			}
+		}
+	}()
+	select {
+	case err := <-errCh:
+		return err
+	case <-make(chan struct{}):
+		fmt.Println("👋 bye-bye!")
+	}
 	return nil
 }
 
-func convertAndSave(cmd ConvertCmd, app *whip.Cli) error {
-	mdFile, err := NewMarkdownFile(cmd.Src, cmd.Theme)
+func convertAndSaveDir(inDir string, outDir string, theme string) error {
+	err := filepath.WalkDir(inDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return wherr.Consume(wherr.Here(), err, "")
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".md" {
+			return nil
+		}
+		relPath, err := filepath.Rel(inDir, path)
+		if err != nil {
+			return wherr.Consume(wherr.Here(), err, "")
+		}
+		outPath := filepath.Join(outDir, relPath)
+		outPath = strings.TrimSuffix(outPath, ".md")
+		outPath = outPath + ".html"
+		err = convertAndSaveFile(path, theme, outPath)
+		if err != nil {
+			return wherr.Consume(wherr.Here(), err, "")
+		}
+		return nil
+	})
+	if err != nil {
+		return wherr.Consume(wherr.Here(), err, "")
+	}
+	return nil
+}
+
+func convertAndSaveFile(mdFilePath string, theme string, saveTo string) error {
+	mdFile, err := NewMarkdownFile(mdFilePath, theme)
 	if err != nil {
 		return wherr.Consume(wherr.Here(), err, "failed to load markdown")
 	}
-	err = SaveMarkdownHtmlToDisk(mdFile, cmd.Out)
+	err = SaveMarkdownHtmlToDisk(mdFile, saveTo)
 	if err != nil {
 		return wherr.Consume(wherr.Here(), err, "failed to save html")
 	}
