@@ -3,18 +3,20 @@ metaContent: "a readme about marki"
 ---
 
 # marki
-A runtime for content-driven developers who just want to turn `.md` into `.html` with styled code blocks. Run marki in the background, write your content, and use the generated html. Dead simple.
+A runtime for content-driven developers who just want to turn `.md` into `.html`. Run marki in the background, write your content, and use the generated html. Dead simple.
 
 ## Installation
 ```bash
-go install github.com/Phillip-England/marki@v0.0.2
+go install github.com/Phillip-England/marki@v0.0.3
 ```
 
 ## Usage
 ```bash
-marki <INDIR> <OUTDIR> <THEME> <FLAGS
-marki ./in ./out dracula
-marki ./in ./out dracula --watch
+marki convert <SRC> <OUT> <THEME> <FLAGS>
+marki convert ./indir ./outdir dracula
+marki convert ./indir ./outdir dracula --watch
+marki convert ./infile.md ./outfile.html dracula
+marki convert ./infile.md ./outfile.html dracula --watch
 ```
 
 ## Themes
@@ -25,7 +27,7 @@ Goldmark uses [Chroma](https://github.com/alecthomas/chroma) for syntax highligh
 The first theme is `abap.xml`, so to use it with marki call:
 
 ```bash
-marki <INDIR> <OUTDIR> abap --watch
+marki convert <SRC> <OUT> abap --watch
 ```
 
 ## Metadata
