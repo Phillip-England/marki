@@ -22,7 +22,7 @@ run:
 
 *to avoid issues with commas, we use <<EOF to pipe multiple lines of input to marki*
 convert:
-	marki convert <THEME> <STR>
+	marki convert <THEME> <MARKDOWN_STR>
 	marki convert dracula <<EOF
 		# My Header
 		some text

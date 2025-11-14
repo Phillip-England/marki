@@ -16,7 +16,7 @@ type Convert struct {
 }
 
 func NewConvert(cli *whip.Cli) (whip.Cmd, error) {
-	theme, err := cli.ArgGetByPositionForce(2, "<THEME> is required in 'marki convert <THEME> <MARKDOWN-STR>'")
+	theme, err := cli.ArgGetByPositionForce(2, "<THEME> is required in 'marki convert <THEME> <MARKDOWN_STR>'")
 	if err != nil {
 		return Convert{}, wherr.Consume(wherr.Here(), err, "")
 	}

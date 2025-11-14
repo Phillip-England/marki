@@ -12,11 +12,19 @@ go install github.com/phillip-england/marki
 
 ## Usage
 ```bash
-marki convert <SRC> <OUT> <THEME> <FLAGS>
-marki convert ./indir ./outdir dracula
-marki convert ./indir ./outdir dracula --watch
-marki convert ./infile.md ./outfile.html dracula
-marki convert ./infile.md ./outfile.html dracula --watch
+marki run <SRC> <OUT> <THEME> <FLAGS>
+marki run ./indir ./outdir dracula
+marki run ./indir ./outdir dracula --watch
+marki run ./infile.md ./outfile.html dracula
+marki run ./infile.md ./outfile.html dracula --watch
+
+# to avoid issues with commas, we use <<EOF to pipe multiple lines of input to marki
+convert:
+	marki convert <THEME> <MARKDOWN_STR>
+	marki convert dracula <<EOF
+		# My Header
+		some text
+		EOF
 ```
 
 ## Themes
