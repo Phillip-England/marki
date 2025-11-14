@@ -12,6 +12,7 @@ go install github.com/phillip-england/marki
 
 ## Usage
 ```bash
+run:
 marki run <SRC> <OUT> <THEME> <FLAGS>
 marki run ./indir ./outdir dracula
 marki run ./indir ./outdir dracula --watch
