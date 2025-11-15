@@ -36,7 +36,7 @@ Goldmark uses [Chroma](https://github.com/alecthomas/chroma) for syntax highligh
 The first theme is `abap.xml`, so to use it with marki call:
 
 ```bash
-marki convert <SRC> <OUT> abap --watch
+marki run <SRC> <OUT> abap --watch
 ```
 
 ## Metadata
