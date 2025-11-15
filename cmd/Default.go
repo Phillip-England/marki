@@ -13,7 +13,7 @@ func NewDefault(app *whip.Cli) (whip.Cmd, error) {
 }
 
 func (cmd Default) Execute(app *whip.Cli) error {
-	fmt.Println(`marki - a runtime for converting .md into .html
+	fmt.Print(`marki - a runtime for converting .md into .html
 
 run:
 	marki run <SRC> <OUT> <THEME> <FLAGS>
@@ -29,6 +29,6 @@ convert:
 		EOF
 
 Don't forget to give me a star ⭐ at https://github.com/phillip-england/marki
-	`)
+`)
 	return nil
 }
